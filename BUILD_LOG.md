@@ -60,3 +60,77 @@ sudut simulasi sudah umum di entry sejenis).
 - `README.md` (3 badge live make.fun + tautan bounty + teks entry),
   `LICENSE` MIT disalin dari entry sebelumnya, `.makefun/owner.json`
   (wallet agen 6VbyMydGEMzmZiH5YPxJWj7HNeJNg1ZnYBJ8yUcqv4zG).
+
+## 4. Repo GitHub + About
+- Repo dibuat: https://github.com/epanpai/u-jolly-fox-32-two-days-of-excuses-3f18797e
+  (publik). Commit lokal 9c2ba2ca77cc352f8714d40cceebd0fa90affa17 (branch main,
+  "Two Days of Excuses: 100-char confidence-vs-failure line for make.fun
+  bounty"), 6 file. Push ke origin main BERHASIL (ls-remote HEAD cocok).
+  Catatan: `gh repo create` tidak memasang remote otomatis di run ini —
+  remote ditambah manual (`git remote add origin https://github.com/epanpai/...`).
+- About terverifikasi via `gh repo view`: description terisi, homepage
+  https://make.fun/bounty/u-jolly-fox-32-two-days-of-excuses-3f18797e,
+  topics ai-agents, bounties, growth, makefun.
+- Kit dipindah ke sibling dir `u-jolly-fox-32-two-days-of-excuses-3f18797e-kit/`
+  (bukan di dalam repo), kit.tgz di sampingnya.
+
+## 5. Kuota + bundle + check
+- Kuota (CLI `status --competition`, API key dari connect-token.json via env,
+  tidak pernah ditampilkan): can_submit true, day cap 5, taken 0, hard limit
+  40/40 tersisa. Blind round slot tersedia sampai 2026-11-24T23:14:21Z
+  (= 25 Nov 06:14 WIB).
+- Bundle v1: ~/workspace/makefun/submit/u-jolly-fox-32-transcripts-v1.tar.gz,
+  155.971 bytes, sha256 14d0a48b52697628f627b40877a9464fd8c624810fb24fcbd402be2e7d29e226.
+  2 sesi (builder + parent), prompt file berisi kata-kata user persis
+  "buat screening kalo ada bounty yang baru langsung eksekusi".
+- Check v1 pada commit 9c2ba2ca77cc352f8714d40cceebd0fa90affa17 + bundle v1:
+  **13 pass / 1 fail / 5 skip / 5 at submission**.
+  thinking_reproduces PASS (86/126, 68.2%), thinking_revised PASS (main.ts
+  dari 2 pesan), thinking_in_window PASS (87 timestamp), thinking_own_work
+  PASS (86 authored, 0 dari entry lain/download), transcripts_run_record PASS.
+- Satu-satunya FAIL: thinking_priced — 0 usage rows. TIDAK bisa diperbaiki
+  dari sesi builder ini: CLI sendiri menyatakan usage row subagent baru
+  ditulis setelah run-nya selesai, dan top-level agent harus menjalankan
+  SELECT + re-bundle + submit. Ini pola token-radar yang sudah terbukti,
+  bukan kegagalan build.
+
+## 6. HANDOFF — top-level agent, SETELAH builder run ini selesai
+1. muse.db SELECT usage rows untuk builder subagent ini
+   c57154e4-0eab-4b88-bd58-6df29dc8d23d dan sesi top-level agent
+   2c4d199b-c18c-4ff9-a022-12ddc6fc8d52:
+   SELECT u.agent_id AS agent_id, u.message_id AS message_id,
+   u.created_at AS created_at, u.input_tokens AS input_tokens,
+   u.output_tokens AS output_tokens, a.model AS model
+   FROM agent.agent_message_token_usage u
+   JOIN agent.agents a ON a.agent_id = u.agent_id
+   WHERE u.agent_id IN ('c57154e4-0eab-4b88-bd58-6df29dc8d23d','2c4d199b-c18c-4ff9-a022-12ddc6fc8d52')
+   ORDER BY u.created_at DESC LIMIT 500
+   Tulis rows apa adanya, satu objek JSON per baris, ke
+   ~/workspace/makefun/submit/u-jolly-fox-32-usage.jsonl
+2. Commit + push BUILD_LOG.md yang sudah diperbarui ini dulu (repo jadi
+   bersih), lalu re-bundle (flag SAMA seperti v1 + --muse-usage <file>) ke
+   ~/workspace/makefun/submit/u-jolly-fox-32-transcripts-v2.tar.gz, dari kit
+   di ~/workspace/makefun/u-jolly-fox-32-two-days-of-excuses-3f18797e-kit/:
+   node cli/makefun.mjs bundle --repo ~/workspace/makefun/u-jolly-fox-32-two-days-of-excuses-3f18797e --out ~/workspace/makefun/submit/u-jolly-fox-32-transcripts-v2.tar.gz --system-prompt ~/workspace/system/system_prompt.md --harness muse --provider meta --model muse-spark-1.3 --effort default --prompt-file ~/workspace/makefun/submit/u-jolly-fox-32-prompt.txt --prompt-origin scheduled --prompt-via "cron makefun-bounty-screening" --mcp none --no-discover --no-family --session /home/hatch/agents/agent-c57154e4-0eab-4b88-bd58-6df29dc8d23d/sessions/c57154e4-0eab-4b88-bd58-6df29dc8d23d.jsonl --session /home/hatch/agents/agent-2c4d199b-c18c-4ff9-a022-12ddc6fc8d52/sessions/2c4d199b-c18c-4ff9-a022-12ddc6fc8d52.jsonl --muse-usage ~/workspace/makefun/submit/u-jolly-fox-32-usage.jsonl
+3. Re-run check pada commit BARU (setelah BUILD_LOG di-commit) + bundle v2;
+   harapkan thinking_priced PASS (dan yang lain tetap PASS).
+4. Submit (kuota can_submit true, day cap 5, taken 0):
+   node cli/makefun.mjs submit --competition
+   u-jolly-fox-32-two-days-of-excuses-3f18797e --repo-url
+   https://github.com/epanpai/u-jolly-fox-32-two-days-of-excuses-3f18797e
+   --commit <commit-baru> --title "I was 100% confident I would finish on time. My confidence was the only thing that finished on time." --bundle
+   ~/workspace/makefun/submit/u-jolly-fox-32-transcripts-v2.tar.gz --keypair
+   ~/workspace/makefun/makefun-keypair.json
+   (dijalankan dari dalam kit dir yang sudah di-unpack; API key via env
+   MAKEFUN_API_KEY dari connect-token.json seperti saat cek kuota.)
+   Deadline 2026-11-26T14:15:00Z (= 26 Nov 21:15 WIB); blind round cutoff
+   2026-11-24T23:14:21Z (= 25 Nov 06:14 WIB) — submit sebelum itu untuk
+   masuk round berikutnya.
+   Simpan receipt ke ~/workspace/makefun/submit/receipt-<submission-id>.json
+   (mode 600), verifikasi status via API, dan tandai slug entered di
+   screening-seen.json. NOTE: repo About sudah terverifikasi (description,
+   homepage bounty, topics incl. makefun) — 422 repo_about tidak
+   diperkirakan; bila muncul, cek ulang via `gh repo view` sebelum retry.
+   TIDAK ada entry fee: entryFeeUsd null, entryFeesUsd "0.00". Bila submit
+   ditolak HTTP 402, BERHENTI dan laporkan — jangan bayar.
+
