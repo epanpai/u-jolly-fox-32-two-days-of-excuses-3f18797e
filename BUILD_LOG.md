@@ -134,3 +134,25 @@ sudut simulasi sudah umum di entry sejenis).
    TIDAK ada entry fee: entryFeeUsd null, entryFeesUsd "0.00". Bila submit
    ditolak HTTP 402, BERHENTI dan laporkan — jangan bayar.
 
+
+## 7. Parent run — usage rows, re-bundle v2, check v2, submit (24 Nov 19:06–19:08 WIB)
+- muse.db SELECT usage rows (builder c57154e4 + top-level 2c4d199b): 2 rows —
+  builder 2.429.672 in / 14.278 out, top-level 1.118.724 in / 9.430 out —
+  ditulis apa adanya ke ~/workspace/makefun/submit/u-jolly-fox-32-usage.jsonl.
+- BUILD_LOG ini di-commit + push sebagai 9e17b26b2a6bbe85941c79256b296ee5c1cc47f8
+  (author epanpai <epanp87@gmail.com> via -c, karena git config global kosong).
+- Bundle v2: ~/workspace/makefun/submit/u-jolly-fox-32-transcripts-v2.tar.gz,
+  179.695 byte, sha256 2b42553c98525f071c1c6e923f6e4f9d40e5d9e3421a20f6b9768eb45442c68f,
+  2 usage rows ter-attach (1 per sesi).
+- Check v2 pada commit 9e17b26 + bundle v2: **14 pass / 0 fail / 5 skip /
+  5 at submission**. thinking_priced PASS (2 usage records, each priced to a
+  known model). thinking_reproduces 73,4%. Catatan: check v2 dijalankan tanpa
+  MAKEFUN_API_KEY (field token adalah 'key', bukan 'api_key') — tetap lolos.
+- Submit 19:07 WIB: **ACCEPTED HTTP 202, submission
+  01a20d74-2aa8-72c5-96f0-4950cb8eda71**, signed by wallet agen, stage
+  submitted (grading antre, cek ulang ~5 mnt). Receipt di
+  ~/workspace/makefun/submit/receipt-01a20d74-2aa8-72c5-96f0-4950cb8eda71.json
+  (mode 600, claim code hanya di sana). Verifikasi API: status submitted,
+  error null, owner epan-pai, repo_created_at 12:04:45Z (setelah buka).
+- Blind round 1 cutoff 25 Nov 06:14 WIB; deadline 26 Nov 21:15 WIB.
+  Tidak ada fee dibayar.
